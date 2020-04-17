@@ -51,6 +51,13 @@ class RD6006:
         regs = self._read_registers(M*4 + 80, 4)
         print(f"M{M}: {regs[0]/100:4.1f}V, {regs[1]/1000:3.3f}A, OVP:{regs[2]/100:4.1f}V, OCP:{regs[3]/1000:3.3f}A")
 
+    def _memall(self):
+        """reads the all memory registers at once and print per line
+           which is faster than reading each memory one by one"""
+        regs = self._read_registers(80, 40)
+        for m in range(10):
+            print(f"M{m}: {regs[m*4]/100:5.2f} V, {regs[m*4+1]/1000:3.3f} A, OVP={regs[m*4+2]/100:5.2f} V, OCP={regs[m*4+3]/1000:3.3f} A")
+        
     def status(self):
         regs = self._read_registers(0, 84)
         print("== Device")
@@ -86,8 +93,7 @@ class RD6006:
         print(f"Capacity: {(regs[38] <<16 | regs[39])/1000}Ah")   # TODO check 8 or 16 bits?
         print(f"Energy  : {(regs[40] <<16 | regs[41])/1000}Wh")   # TODO check 8 or 16 bits?
         print("== Memories")
-        for m in range(10):
-            self._mem(M=m)
+        self._memall()
 
     @property
     def input_voltage(self):
