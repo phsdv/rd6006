@@ -239,12 +239,11 @@ class RD6006:
 
 if __name__ == "__main__":
     import serial.tools.list_ports
-    ports = list(serial.tools.list_ports.comports())
-    for p in ports:
-        if 'CH340' in p[1]:
-            print(p)
-            r = RD6006(p[0])
+    for port in serial.tools.list_ports.comports():
+        if 'CH340' in port[1]:
             break
     else:
-        raise Exception("Port not found")
-    r.status()
+        raise Exception("No port not found, is USB cable plugged in?")
+        
+    ps1 = RD6006(port[0], synctime=True)
+    ps1.status()
