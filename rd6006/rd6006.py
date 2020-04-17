@@ -34,6 +34,18 @@ class RD6006:
         except minimalmodbus.NoResponseError:
             return self._write_register(register, value)
 
+    def _unsigned2signed(self, regs):
+        """convert the 2 register temperature in a single signed integer
+           expects a list of 2 values with [sign, value]"""
+        sign = regs[0]
+        value = regs[1]
+        if sign == 0:
+            return value
+        elif sign == 1:
+            return -value
+        else:
+            Exception(f"Unknown value for sign: {sign}")
+
     def _mem(self, M=0):
         """reads the 4 register of a Memory[0-9] and print on a single line"""
         regs = self._read_registers(M*4 + 80, 4)
@@ -87,11 +99,15 @@ class RD6006:
 
     @property
     def meastemp(self):
-        return self._read_register(35)
+        return self._unsigned2signed(self._read_registers(4, 2))
+
+    @property
+    def meastempprobe(self):
+        return self._unsigned2signed(self._read_registers(34, 2))
 
     @property
     def meastempf(self):
-        return self._read_register(37)
+        return self._unsigned2signed(self._read_registers(36, 2))
 
     @voltage.setter
     def voltage(self, value):
