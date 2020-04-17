@@ -1,15 +1,27 @@
+from datetime import datetime
 import minimalmodbus
 minimalmodbus.TIMEOUT = 0.5
 
 class RD6006:
-    def __init__(self, port, address=1, baudrate=115200):
+    """Interface to RD6006 power supply"""
+    def __init__(self, port, address=1, baudrate=115200, synctime=False):
+        """ port is name of serial port
+            adress is modbus slaveaddress
+            baudrate the serial bus speed
+            synctime: if true the internal datetime will be set same as local
+        """
         self.port = port
         self.address = address
         self.instrument = minimalmodbus.Instrument(port=port, slaveaddress=address)
-        self.instrument.serial.baudrate=baudrate
-        regs = self._read_registers(2, 2)
-        self.sn = regs[0]
-        self.fw = regs[1]/100
+        self.instrument.serial.baudrate = baudrate
+        regs = self._read_registers(0, 4)
+        self.model = regs[0]
+        self.sn = regs[1]<<16 | regs[2]
+        self.fw = regs[3]/100
+        if synctime:
+            now = datetime.now()
+            self.date = [now.year, now.month, now.day]
+            self.time = [now.hour, now.minute, now.second]
 
     def __repr__(self):
         return f"RD6006 SN:{self.sn} FW:{self.fw}"
