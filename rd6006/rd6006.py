@@ -144,12 +144,12 @@ class RD6006:
         return self._read_register(13)/100
 
     @property
-    def measah(self):
-        return (self._read_register(38) <<16 | self._read_register(39))/1000   # TODO check 16 or 8 bit
+    def charge(self): # used to be called measah
+        return (self._read_register(38) <<16 | self._read_register(39))/1000
 
     @property
-    def measwh(self):
-        return (self._read_register(40) <<16 | self._read_register(41))/1000   # TODO check 16 or 8 bit
+    def energy(self): # used to be called measwh
+        return (self._read_register(40) <<16 | self._read_register(41))/1000
 
     @property
     def battmode(self):
