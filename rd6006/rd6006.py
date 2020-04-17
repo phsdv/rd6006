@@ -46,6 +46,15 @@ class RD6006:
         except minimalmodbus.NoResponseError:
             return self._write_register(register, value)
 
+    def _write_registers(self, start, values):
+        """writes multiple values starting at start. Values must be a list"""
+        try:
+            return self.instrument.write_registers(start, values)
+        except minimalmodbus.NoResponseError:
+            return self._write_registers(start, values)
+        except minimalmodbus.InvalidResponseError:
+            return self._write_registers(start, values)
+        
     def _unsigned2signed(self, regs):
         """convert the 2 register temperature in a single signed integer
            expects a list of 2 values with [sign, value]"""
@@ -205,34 +214,28 @@ class RD6006:
     @property
     def date(self):
         """returns the date as tuple: (year, month, day)"""
-        regs = self._read_registers(48,3)
-        year = regs[0]
-        month = regs[1]
-        day = regs[2]
-        return(year, month, day)   
+        y, m, d = self._read_registers(48, 3)
+        return(y, m, d)  
     @date.setter
     def date(self, value):
-        """Sets the date, needs tuple with (year, month, day) as argument"""
-        year, month, day = value
-        self._write_register(48, year)
-        self._write_register(49, month)
-        self._write_register(50, day)
+        """Sets the date, value needs to be list with: (year, month, day)"""
+        if len(value) == 3:
+            self._write_registers(48, value)
+        else:
+            raise Exception("Date must be list with 3 values: [year,month,date]")
 
     @property
     def time(self):
         """returns the time as tuple: (h, m, s)"""
-        regs = self._read_registers(51, 3)
-        h = regs[0]
-        m = regs[1]
-        s = regs[2]
-        return(h, m, s)   
+        h,m,s = self._read_registers(51, 3)
+        return(h, m, s)  
     @time.setter
     def time(self, value):
-        """sets the time, needs time with (h, m, s) as argument"""
-        h, m, s = value
-        self._write_register(51, h)
-        self._write_register(52, m)
-        self._write_register(53, s)
+        """"sets the time. Value must be list: [hour, minute, second]"""
+        if len(value) == 3:
+            self._write_registers(51, value)
+        else:
+            raise Exception("Time must be list with 3 values: [hour, minute, second]")
 
 if __name__ == "__main__":
     import serial.tools.list_ports
