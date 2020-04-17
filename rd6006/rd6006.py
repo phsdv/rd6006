@@ -81,38 +81,34 @@ class RD6006:
         
     def status(self):
         regs = self._read_registers(0, 84)
-        print("== Device")
-        print(f"Model   : {regs[0]/10}")
-        print(f"SN      : {(regs[1]<<16 | regs[2]):08d}")
-        print(f"Firmware: {regs[3]/100}")
-        print(f"Input   : {regs[14]/100}V")
-        if regs[4]:
-            sign = -1
-        else:
-            sign = +1
-        print(f"Temp    : {sign * regs[5]}°C")
-        if regs[34]:
-            sign = -1
-        else:
-            sign = +1
-        print(f"TempProb: {sign * regs[35]}°C")
-        print("== Output")
-        print(f"Voltage : {regs[10]/100}V")
-        print(f"Current : {regs[11]/1000}A")
-        print(f"Energy  : {regs[12]/1000}Ah")
-        print(f"Power   : {regs[13]/100}W")
+        print(f"Model   : {self.model}")
+        print(f"SN      : {self.sn:08d}")
+        print(f"Firmware: {self.fw}")
+        print(f"Input   : {regs[14]/100} V")
+        print(f"Temp    : {self._unsigned2signed(self._read_registers(4, 2))} °C")
+        print(f"TempProb: {self._unsigned2signed(self._read_registers(34, 2))} °C")
+        print("== DateTime")
+        print(f"Date    : {regs[48]}-{regs[49]}-{regs[50]}")
+        print(f"Time    : {regs[51]}:{regs[52]}:{regs[53]}")
         print("== Settings")
-        print(f"Voltage : {regs[8]/100}V")
-        print(f"Current : {regs[9]/1000}A")
-        print("== Protection")
-        print(f"Voltage : {regs[82]/100}V")
-        print(f"Current : {regs[83]/1000}A")
+        print(f"Voltage : {regs[8]/100:4.2f} V")
+        print(f"Current : {regs[9]/1000:3.3f} A")
+        print(f"OVP     : {regs[82]/100:4.2f} V")
+        print(f"OCP     : {regs[83]/1000:3.3f} A")
+        print("== Output")
+        print(f"Voltage : {regs[10]/100:4.2f} V")
+        print(f"Current : {regs[11]/1000:3.3f} A")
+        print(f"Power   : {regs[13]/100} W")
+        print("== Energy")
+        print(f"Charge  : {(regs[38] <<16 | regs[39])/1000} Ah")
+        print(f"Energy  : {(regs[40] <<16 | regs[41])/1000} Wh")
         print("== Battery")
         if regs[32]:
             print("Active")
-            print(f"Voltage : {regs[33]/100}V")
-        print(f"Capacity: {(regs[38] <<16 | regs[39])/1000}Ah")   # TODO check 8 or 16 bits?
-        print(f"Energy  : {(regs[40] <<16 | regs[41])/1000}Wh")   # TODO check 8 or 16 bits?
+            print(f"Voltage : {regs[33]/100} V")
+            #print(f"Charged : {regs[12]/1000} Ah") # only for battery? NOT WORKING????
+        else:
+            print("Not active")
         print("== Memories")
         self._memall()
 
